@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="false">
+    <contextName>simple-rpc</contextName>
+    <property name="loggingRoot" value="/mnt/logs/simple-rpc" />
+    <property name="loggingCharset" value="utf-8" />
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoding>${loggingCharset}</encoding>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <levelMin>INFO</levelMin>
+            <levelMax>ERROR</levelMax>
+        </filter>
+        <encoder>
+            <pattern><![CDATA[
+				%d{yyyy-MM-dd HH:mm:ss}, %p, %c, %F, %L, %M %m%n
+            ]]></pattern>
+        </encoder>
+    </appender>
+
+    <appender name="WarnFile"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>WARN</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <file>${loggingRoot}/warn.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${loggingRoot}/warn_%d{yyyy-MM-dd}.log
+            </FileNamePattern>
+            <MaxHistory>7</MaxHistory>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>
+                %d{yyyy-MM-dd HH:mm:ss}, %p, %c, %F, %L, %M %m%n
+            </pattern>
+            <charset>utf-8</charset>
+        </encoder>
+    </appender>
+
+    <appender name="ErrorFile"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <file>${loggingRoot}/error.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${loggingRoot}/error_%d{yyyy-MM-dd}.log
+            </FileNamePattern>
+            <MaxHistory>7</MaxHistory>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>
+                %d{yyyy-MM-dd HH:mm:ss}, %p, %c, %F, %L, %M %m%n
+            </pattern>
+            <charset>${loggingCharset}</charset>
+        </encoder>
+    </appender>
+
+    <root>
+        <level value="INFO"/>
+        <appender-ref ref="WarnFile" />
+        <appender-ref ref="ErrorFile" />
+    </root>
+</configuration>
