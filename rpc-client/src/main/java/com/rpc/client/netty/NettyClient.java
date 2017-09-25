@@ -1,11 +1,11 @@
 package com.rpc.client.netty;
 
-import com.rpc.common.config.GlobalRunCfg;
 import com.rpc.common.domain.RpcPoster;
 import com.rpc.common.domain.RpcResponse;
 import com.rpc.common.protocol.RpcProtocol;
+import com.rpc.common.service.RpcCallback;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.ChannelFuture;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -15,13 +15,8 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created on 2017/5/28.
@@ -31,48 +26,46 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class NettyClient {
 
-    private RpcResponse response;
-    private CountDownLatch latch = new CountDownLatch(1);
+    private Channel channel;
 
-    @Resource(name = "globalRunCfg")
-    private GlobalRunCfg cfg;
-
-    public RpcResponse startUp(String host, int port, RpcPoster poster) throws InterruptedException {
+    public void startUp(String host, int port, RpcPoster poster) throws InterruptedException {
         EventLoopGroup group = new NioEventLoopGroup();
-        try {
-            Bootstrap b = new Bootstrap();
-            b.group(group)
-                    .channel(NioSocketChannel.class)
-                    .option(ChannelOption.TCP_NODELAY, false)
-                    .handler(new ChannelInitializer<SocketChannel>() {
-                        protected void initChannel(SocketChannel ch) throws Exception {
 
-                            ChannelPipeline cp = ch.pipeline();
-                            //加入编解码类
-                            RpcProtocol protocol = new RpcProtocol();
-                            cp.addLast(protocol.new RpcPosterEncoder(RpcPoster.class));
-                            cp.addLast(protocol.new RpcPosterDecoder(RpcResponse.class));
-                            cp.addLast(new ClientHandler());
-                        }
-                    });
-            ChannelFuture future = b.connect(host, port).sync();
-            future.channel().writeAndFlush(poster).sync();
-            latch.await(cfg.getTimeout(), TimeUnit.SECONDS);
-//            if (this.poster != null){
-//                future.channel().closeFuture().sync();
-//            }
-            return response;
-        }finally {
-            group.shutdownGracefully();
+        Bootstrap b = new Bootstrap();
+        b.group(group)
+                .channel(NioSocketChannel.class)
+                .option(ChannelOption.TCP_NODELAY, false)
+                .handler(new ChannelInitializer<SocketChannel>() {
+                    protected void initChannel(SocketChannel ch) throws Exception {
+
+                        ChannelPipeline cp = ch.pipeline();
+                        //加入编解码类
+                        RpcProtocol protocol = new RpcProtocol();
+                        cp.addLast(protocol.new RpcPosterEncoder(RpcPoster.class));
+                        cp.addLast(protocol.new RpcPosterDecoder(RpcResponse.class));
+                        cp.addLast(new ClientHandler());
+                    }
+                });
+        this.channel = b.connect(host, port).sync().channel();
+
+    }
+
+    public void send(RpcPoster poster) throws InterruptedException {
+        this.channel.writeAndFlush(poster).sync();
+    }
+
+    public void close() {
+        if (this.channel != null && this.channel.isOpen()) {
+            this.channel.close();
         }
     }
 
     public class ClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
 
         @Override
-        protected void channelRead0(ChannelHandlerContext ctx, RpcResponse msg) throws Exception {
-            response = msg;
-            latch.countDown();
+        protected void channelRead0(ChannelHandlerContext ctx, RpcResponse response) throws Exception {
+            RpcCallback future = RpcCallback.callbackMap.get(response.getRequestId());
+            future.setResponse(response);
         }
 
         @Override

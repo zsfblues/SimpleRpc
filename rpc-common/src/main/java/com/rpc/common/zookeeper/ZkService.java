@@ -4,6 +4,8 @@ import com.rpc.common.config.GlobalRunCfg;
 import com.rpc.common.domain.rpcService.RpcServiceBean;
 import com.rpc.common.domain.ServiceHost;
 import com.rpc.common.domain.rpcService.RpcServiceContainer;
+import com.rpc.common.ip.IpUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -50,8 +52,9 @@ public class ZkService {
         }
 
         try {
-            String localAddress = Inet4Address.getLocalHost().getHostAddress();
-            synchronized (ZK_ROOT_NODE + PATH_SEPARATOR + localAddress){
+            String ip = IpUtil.getIp();
+
+            synchronized (ZK_ROOT_NODE + PATH_SEPARATOR + ip){
 
                 //预置根节点
                 if (curator.checkExists().forPath(ZK_ROOT_NODE) == null){
@@ -60,7 +63,7 @@ public class ZkService {
                 }
 
                 rpcServiceContainer.getServiceNameSet().forEach(k -> {
-                    String childPath = ZK_ROOT_NODE + PATH_SEPARATOR + k + PATH_SEPARATOR + localAddress;
+                    String childPath = ZK_ROOT_NODE + PATH_SEPARATOR + k + PATH_SEPARATOR + ip;
                     try {
                         if (curator.checkExists().forPath(childPath) == null){
                             newNode(childPath);
