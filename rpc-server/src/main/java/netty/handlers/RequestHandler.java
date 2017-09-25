@@ -46,6 +46,7 @@ public class RequestHandler extends SimpleChannelInboundHandler<RpcPoster> {
                     Class<?> clazz = Class.forName(poster.getClassName());
                     Method target = clazz.getMethod(poster.getMethodName(), poster.getParameterTypes());
                     Object result = target.invoke(serviceBean.getObject(), poster.getParameters());
+                    response.setRequestId(poster.getRequestId());
                     response.setResult(result);
                     break;
                 } catch (Exception e) {

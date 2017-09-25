@@ -1,12 +1,15 @@
-
 package com.rpc.client.proxy;
 
 import com.rpc.client.netty.NettyClient;
+import com.rpc.common.config.GlobalRunCfg;
 import com.rpc.common.domain.RpcPoster;
 import com.rpc.common.domain.RpcResponse;
 import com.rpc.common.domain.ServiceHost;
+import com.rpc.common.service.RpcCallbackFuture;
 import com.rpc.common.uuid.IncrementId;
 import com.rpc.common.zookeeper.ZkService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -20,7 +23,9 @@ import java.util.Random;
  * @author zhoushengfan
  */
 @Component
-public class RpcClientProxy implements IProxy{
+public class RpcClientProxy implements IProxy {
+
+    private static Logger logger = LoggerFactory.getLogger(NettyClient.class);
 
     @Resource
     private ZkService zkService;
@@ -28,37 +33,62 @@ public class RpcClientProxy implements IProxy{
     @Resource
     private NettyClient nettyClient;
 
+    @Resource(name = "globalRunCfg")
+    private GlobalRunCfg cfg;
+
     /**
      * @param interfaceClass 远程调用的接口类型
-     * @param group 分组名，用于区分同一个接口的不同实现类
+     * @param group          分组名，用于区分同一个接口的不同实现类
      */
+    @SuppressWarnings("unchecked")
     public <T> T newProxy(Class<T> interfaceClass, final String group) {
         checkInterface(interfaceClass);
-        return (T) Proxy.newProxyInstance(interfaceClass.getClassLoader(), new Class[] { interfaceClass },
-                (proxy, method, args) -> {
-                    RpcPoster poster = new RpcPoster();
-                    poster.setRequestId(IncrementId.next());
-                    poster.setClassName(method.getDeclaringClass().getName());
-                    poster.setMethodName(method.getName());
-                    poster.setParameters(args);
-                    poster.setParameterTypes(method.getParameterTypes());
-                    poster.setGroup(group);
+        return (T) Proxy.newProxyInstance(interfaceClass.getClassLoader(), new Class[]{interfaceClass},
+            (proxy, method, args) -> {
+                RpcPoster poster = new RpcPoster();
+                poster.setRequestId(IncrementId.next());
+                poster.setClassName(method.getDeclaringClass().getName());
+                poster.setMethodName(method.getName());
+                poster.setParameters(args);
+                poster.setParameterTypes(method.getParameterTypes());
+                poster.setGroup(group);
 
-                    List<ServiceHost> services = zkService.discoverServices(poster.getClassName());
-                    if (services.isEmpty()) {
-                        throw new IllegalStateException("not exist service: " + poster.getClassName());
+                List<ServiceHost> services = zkService.discoverServices(poster.getClassName());
+                if (services.isEmpty()) {
+                    throw new IllegalStateException("not exist service: " + poster.getClassName());
+                }
+                //在zookeeper中随机选择一台可以提供服务的远程主机
+                ServiceHost remoteHost = services.get(new Random().nextInt(services.size()));
+
+                RpcCallbackFuture future = new RpcCallbackFuture(poster);
+                RpcCallbackFuture.futureMap.put(poster.getRequestId(), future);
+
+                RpcCallbackFuture.taskPool.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            nettyClient.startUp(remoteHost.getIp(), Integer.parseInt(remoteHost.getPort()), poster);
+                            nettyClient.send(poster);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                     }
-                    //在zookeeper中随机选择一台可以提供服务的远程主机
-                    ServiceHost remoteHost = services.get(new Random().nextInt(services.size()));
-                    RpcResponse response = nettyClient.startUp(remoteHost.getIp(),
-                            Integer.parseInt(remoteHost.getPort()), poster);
-
-                    return response.getResult();
                 });
+
+                try {
+                    RpcResponse response = future.get(cfg.getTimeout());
+                    return response.getResult();
+                } catch (Exception ex) {
+                    logger.error(ex.toString());
+                    throw ex;
+                } finally {
+                    RpcCallbackFuture.futureMap.remove(poster.getRequestId());
+                }
+
+            });
     }
 
     private void checkInterface(Class<?> clazz) {
-        if (!clazz.isInterface())
-            throw new RuntimeException(clazz.getName() + " is not an interface");
+        if (!clazz.isInterface()) throw new RuntimeException(clazz.getName() + " is not an interface");
     }
 }

@@ -6,10 +6,19 @@ package com.rpc.common.domain;
  * @author zhoushengfan
  */
 public class RpcResponse {
+    private Long requestId;
     private Object result;
     private String errorMsg;
     private Throwable throwable;
     private Boolean isSuccess;
+
+    public Long getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(Long requestId) {
+        this.requestId = requestId;
+    }
 
     public Object getResult() {
         return result;
