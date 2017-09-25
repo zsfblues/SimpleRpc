@@ -8,3 +8,4 @@ target/
 */logs/*
 logs/*
 */.settings/*
+.DS_Store
