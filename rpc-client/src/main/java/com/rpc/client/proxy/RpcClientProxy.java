@@ -1,15 +1,11 @@
 package com.rpc.client.proxy;
 
-import com.rpc.client.netty.NettyClient;
-import com.rpc.common.config.GlobalRunCfg;
+import com.rpc.client.network.netty.NettyClient;
+import com.rpc.client.network.netty.NettyClientPool;
 import com.rpc.common.domain.RpcPoster;
-import com.rpc.common.domain.RpcResponse;
 import com.rpc.common.domain.ServiceHost;
-import com.rpc.common.service.RpcCallback;
 import com.rpc.common.uuid.IncrementId;
 import com.rpc.common.zookeeper.ZkService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -25,16 +21,8 @@ import java.util.Random;
 @Component
 public class RpcClientProxy implements IProxy {
 
-    private static Logger logger = LoggerFactory.getLogger(NettyClient.class);
-
     @Resource
     private ZkService zkService;
-
-    @Resource
-    private NettyClient nettyClient;
-
-    @Resource(name = "globalRunCfg")
-    private GlobalRunCfg cfg;
 
     /**
      * @param interfaceClass 远程调用的接口类型
@@ -59,31 +47,9 @@ public class RpcClientProxy implements IProxy {
                 }
                 //在zookeeper中随机选择一台可以提供服务的远程主机
                 ServiceHost remoteHost = services.get(new Random().nextInt(services.size()));
+                NettyClient nettyClient = NettyClientPool.getClient(remoteHost.getIp());
 
-                RpcCallback callback = new RpcCallback(poster);
-                RpcCallback.callbackMap.put(poster.getRequestId(), callback);
-
-                RpcCallback.taskPool.submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            nettyClient.startUp(remoteHost.getIp(), Integer.parseInt(remoteHost.getPort()), poster);
-                            nettyClient.send(poster);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
-
-                try {
-                    RpcResponse response = callback.get(cfg.getTimeout());
-                    return response.getResult();
-                } catch (Exception ex) {
-                    logger.error(ex.toString());
-                    throw ex;
-                } finally {
-                    RpcCallback.callbackMap.remove(poster.getRequestId());
-                }
+                return nettyClient.request(poster, remoteHost);
 
             });
     }

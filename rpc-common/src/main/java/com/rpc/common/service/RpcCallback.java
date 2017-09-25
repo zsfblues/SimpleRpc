@@ -2,7 +2,6 @@ package com.rpc.common.service;
 
 import com.rpc.common.domain.RpcPoster;
 import com.rpc.common.domain.RpcResponse;
-import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
 import java.util.concurrent.ConcurrentHashMap;
@@ -62,7 +61,7 @@ public class RpcCallback {
         }
 
         if (!isDone) {
-            throw new TimeoutException(MessageFormat.format("simple-rpc, request timeout at:{0}, request:{1}", System.currentTimeMillis(), request.toString()));
+            throw new TimeoutException(MessageFormat.format("simple-rpc -------- request timeout at:{0}, request:{1}", System.currentTimeMillis(), request.toString()));
         }
         return response;
     }
