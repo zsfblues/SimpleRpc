@@ -27,7 +27,7 @@ public class RpcCallback {
 
     private RpcPoster request;
     private RpcResponse response;
-    // future lock
+
     private volatile boolean isDone = false;
 
     public RpcCallback(RpcPoster request) {
@@ -61,7 +61,8 @@ public class RpcCallback {
         }
 
         if (!isDone) {
-            throw new TimeoutException(MessageFormat.format("simple-rpc -------- request timeout at:{0}, request:{1}", System.currentTimeMillis(), request.toString()));
+            throw new TimeoutException(MessageFormat.format("simple-rpc --------> request timeout at:{0}, time limit:{1}, request:{2}",
+                    System.currentTimeMillis(), timeoutMillis, request.toString()));
         }
         return response;
     }

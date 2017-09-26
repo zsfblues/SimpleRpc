@@ -59,6 +59,8 @@ public class NettyClient {
             throw ex;
         } finally {
             RpcCallback.callbackMap.remove(poster.getRequestId());
+            NettyClientPool attachedClientPool =  NettyClientPool.clientPoolMap.get(remoteHost.getIp());
+            attachedClientPool.getPool().returnObject(this);
         }
     }
 

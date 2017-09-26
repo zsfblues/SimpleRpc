@@ -1,5 +1,7 @@
 package com.rpc.common.domain;
 
+import java.util.Arrays;
+
 /**
  * Created on 2017/5/30.
  *
@@ -59,5 +61,10 @@ public class RpcPoster {
 
     public void setParameters(Object[] parameters) {
         this.parameters = parameters;
+    }
+
+    @Override
+    public String toString() {
+        return "RpcPoster{" + "requestId=" + requestId + ", className='" + className + '\'' + ", methodName='" + methodName + '\'' + ", parameterTypes=" + Arrays.toString(parameterTypes) + ", parameters=" + Arrays.toString(parameters) + ", group='" + group + '\'' + '}';
     }
 }
