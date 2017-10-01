@@ -1,4 +1,4 @@
-package com.rpc.common.ip;
+package com.rpc.common.util.ip;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -7,7 +7,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -25,12 +24,11 @@ import java.util.regex.Pattern;
  */
 public class IpUtil {
 
-    private static final String SELF_CONNECTIVITY_IP = "127.0.0.1";
     private static final String OUTSIDE_IP_WEBSITE = "http://www.taobao.com/help/getip.php";
 
     public static String getIp() throws IOException {
         String ip = getLocalIp();
-        if (SELF_CONNECTIVITY_IP.equals(ip)){
+        if (ip == null){
             ip = getOutsideIp();
         }
 
@@ -40,19 +38,22 @@ public class IpUtil {
     private static String getLocalIp() throws UnknownHostException, SocketException {
 
         Enumeration netInterfaces = NetworkInterface.getNetworkInterfaces();
-        InetAddress net0;
+        InetAddress netAddress;
         String localIp = null;
         while (netInterfaces.hasMoreElements()) {
             NetworkInterface ni = (NetworkInterface) netInterfaces.nextElement();
-            net0 = ni.getInetAddresses().nextElement();
-            if (!net0.isSiteLocalAddress() && !net0.isLoopbackAddress() && !net0.getHostAddress().contains(":")) {
-                localIp = net0.getHostAddress();
-                break;
+            Enumeration<InetAddress> inetAddressEnumeration = ni.getInetAddresses();
+            while (inetAddressEnumeration.hasMoreElements()){
+                netAddress = inetAddressEnumeration.nextElement();
+//                if (!net0.isSiteLocalAddress() && !net0.isLoopbackAddress() && !net0.getHostAddress().contains(":")) {
+//                    localIp = net0.getHostAddress();
+//                    break;
+//                }
+                if (!netAddress.isLoopbackAddress() && !netAddress.getHostAddress().contains(":")) {
+                    localIp = netAddress.getHostAddress();
+                    break;
+                }
             }
-        }
-
-        if (localIp == null){
-            localIp = Inet4Address.getLocalHost().getHostAddress();
         }
 
         return localIp;

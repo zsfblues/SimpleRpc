@@ -67,6 +67,7 @@ public class RpcProtocol {
         private static Map<Class<?>, Schema<?>> cachedSchema = new ConcurrentHashMap<>();
         private static Objenesis objenesis = new ObjenesisStd(true);
 
+        @SuppressWarnings("unchecked")
         static <T> byte[] serialize(T obj){
             Class<T> clazz = (Class<T>) obj.getClass();
             LinkedBuffer buffer = LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE);
@@ -92,6 +93,7 @@ public class RpcProtocol {
             }
         }
 
+        @SuppressWarnings("unchecked")
         static <T> Schema<T> getCachedSchema(Class<T> clazz){
             Schema<T> schema = (Schema<T>) cachedSchema.get(clazz);
             if (schema == null){

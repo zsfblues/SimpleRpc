@@ -4,11 +4,11 @@ import com.rpc.client.network.netty.NettyClient;
 import com.rpc.client.network.netty.NettyClientPool;
 import com.rpc.common.domain.RpcPoster;
 import com.rpc.common.domain.ServiceHost;
+import com.rpc.common.registry.Registry;
+import com.rpc.common.util.RegistryUtil;
 import com.rpc.common.uuid.IncrementId;
-import com.rpc.common.zookeeper.ZkService;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import java.lang.reflect.Proxy;
 import java.util.List;
 import java.util.Random;
@@ -20,9 +20,6 @@ import java.util.Random;
  */
 @Component
 public class RpcClientProxy implements IProxy {
-
-    @Resource
-    private ZkService zkService;
 
     /**
      * @param interfaceClass 远程调用的接口类型
@@ -41,7 +38,8 @@ public class RpcClientProxy implements IProxy {
                 poster.setParameterTypes(method.getParameterTypes());
                 poster.setGroup(group);
 
-                List<ServiceHost> services = zkService.discoverServices(poster.getClassName());
+                Registry registry = RegistryUtil.resolveRegistryType(null);
+                List<ServiceHost> services = registry.discoverServices(poster.getClassName());
                 if (services.isEmpty()) {
                     throw new IllegalStateException("not exist service: " + poster.getClassName());
                 }

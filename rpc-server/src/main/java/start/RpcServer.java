@@ -1,21 +1,21 @@
 package start;
 
 import com.rpc.common.annotations.RpcService;
-import com.rpc.common.config.GlobalRunCfg;
+import com.rpc.common.config.GlobalCfgParam;
+import com.rpc.common.domain.URL;
 import com.rpc.common.domain.rpcService.RpcServiceBean;
 import com.rpc.common.domain.rpcService.RpcServiceContainer;
 import com.rpc.common.domain.rpcService.RpcServiceMapping;
+import com.rpc.common.registry.Registry;
+import com.rpc.common.util.RegistryUtil;
 import netty.NettyServer;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import com.rpc.common.zookeeper.ZkService;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -29,15 +29,6 @@ public class RpcServer implements ApplicationContextAware, InitializingBean{
 
     public static final RpcServiceContainer rpcServiceContainer = new RpcServiceContainer();
 
-    @Resource
-    private ZkService zkService;
-
-    @Resource(name = "globalRunCfg")
-    private GlobalRunCfg cfg;
-
-    private static final String ZK_ADDRESS = "zkAddress";
-    private static final String NETTY_PORT = "nettyPort";
-
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         Map<String, Object> serviceBeanMap = applicationContext
@@ -49,13 +40,14 @@ public class RpcServer implements ApplicationContextAware, InitializingBean{
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        Map<String, String> properties = resolveProperties();
 
-        //向zookeeper注册所有服务
-        zkService.register(properties.get(ZK_ADDRESS), rpcServiceContainer);
+        URL url = URL.toURL(GlobalCfgParam.RegistryAddress.getStrVal());
+        Registry registry = RegistryUtil.resolveRegistryType(null);
+        //注册所有服务
+        registry.register(url, rpcServiceContainer);
 
         //启动netty开始监听来自客户端的请求
-        new NettyServer().bind(Integer.parseInt(properties.get(NETTY_PORT)));
+        new NettyServer().bind(GlobalCfgParam.NettyPort.getIntVal());
     }
 
     private void initService(Map<String, Object> serviceBeanMap){
@@ -79,14 +71,5 @@ public class RpcServer implements ApplicationContextAware, InitializingBean{
             mappings.add(serviceMapping);
             rpcServiceContainer.getRpcServiceMap().put(valueName, mappings);
         });
-    }
-
-    private Map<String, String> resolveProperties(){
-        Map<String, String> properties = new HashMap<>();
-        String[] nettyAddress = cfg.getNettyAddress().split(":");
-        properties.put(NETTY_PORT, nettyAddress[1]);
-        properties.put(ZK_ADDRESS, cfg.getZkAddress());
-
-        return properties;
     }
 }

@@ -1,6 +1,7 @@
 package com.rpc.client.network.netty;
 
 import com.rpc.client.network.netty.handler.ClientHandler;
+import com.rpc.common.config.GlobalCfgParam;
 import com.rpc.common.domain.RpcPoster;
 import com.rpc.common.domain.RpcResponse;
 import com.rpc.common.domain.ServiceHost;
@@ -47,11 +48,8 @@ public class NettyClient {
         });
 
         try {
-            InputStream in = this.getClass().getClassLoader().getResourceAsStream("rpc.properties");
-            Properties p = new Properties();
-            p.load(in);
 
-            RpcResponse response = callback.get(Long.valueOf(p.getProperty("rpc.timeout")));
+            RpcResponse response = callback.get(GlobalCfgParam.RequestTimeout.getIntVal());
 
             return response.getResult();
         } catch (Exception ex) {
