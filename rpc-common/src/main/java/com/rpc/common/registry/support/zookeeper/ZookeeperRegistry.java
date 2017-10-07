@@ -48,7 +48,7 @@ public class ZookeeperRegistry extends AbstractRegistry {
                             newNode(childPath);
                         }else {
                             curator.setData().forPath(childPath,
-                                    GlobalCfgParam.NettyAddress.getStrVal().split(":")[1].getBytes());
+                                    GlobalCfgParam.NettyPort.getStrVal().getBytes());
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
