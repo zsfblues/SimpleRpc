@@ -45,14 +45,14 @@ public class IpUtil {
             Enumeration<InetAddress> inetAddressEnumeration = ni.getInetAddresses();
             while (inetAddressEnumeration.hasMoreElements()){
                 netAddress = inetAddressEnumeration.nextElement();
-//                if (!net0.isSiteLocalAddress() && !net0.isLoopbackAddress() && !net0.getHostAddress().contains(":")) {
-//                    localIp = net0.getHostAddress();
-//                    break;
-//                }
-                if (!netAddress.isLoopbackAddress() && !netAddress.getHostAddress().contains(":")) {
+                if (!netAddress.isSiteLocalAddress() && !netAddress.isLoopbackAddress() && !netAddress.getHostAddress().contains(":")) {
                     localIp = netAddress.getHostAddress();
                     break;
                 }
+//                if (!netAddress.isLoopbackAddress() && !netAddress.getHostAddress().contains(":")) {
+//                    localIp = netAddress.getHostAddress();
+//                    break;
+//                }
             }
         }
 

@@ -2,7 +2,6 @@ package com.rpc.common.util;
 
 import com.rpc.common.config.GlobalCfgParam;
 import com.rpc.common.domain.URL;
-import com.rpc.common.exception.SimpleRpcExMsg;
 import com.rpc.common.exception.SimpleRpcExMsgConstants;
 import com.rpc.common.exception.SimpleRpcException;
 import com.rpc.common.registry.Registry;

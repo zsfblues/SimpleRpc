@@ -39,7 +39,7 @@ public class ZookeeperRegistryFactory extends AbstractRegistryFactory {
     }
 
     private CuratorFramework connect(String str){
-        RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 3);
+        RetryPolicy retryPolicy = new ExponentialBackoffRetry(GlobalCfgParam.ConnectTimeout.getIntVal(), 3);
         CuratorFramework client = CuratorFrameworkFactory.builder()
                 .sessionTimeoutMs(GlobalCfgParam.SessionTimeout.getIntVal())
                 .connectString(str)

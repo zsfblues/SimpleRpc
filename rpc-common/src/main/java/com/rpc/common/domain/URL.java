@@ -50,7 +50,7 @@ public class URL {
         // xx://ip:port/path?params..
         Map<String, String> parameters = new HashMap<>();
         if (url.contains("?")){
-            getParamValues(url);
+            parameters = getParamValues(url);
         }
         int inx = url.indexOf("?");
         if (inx > 0){
