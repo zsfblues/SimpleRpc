@@ -2,9 +2,11 @@ package com.rpc.client.proxy;
 
 import com.rpc.client.network.netty.NettyClient;
 import com.rpc.client.network.netty.NettyClientPool;
+import com.rpc.common.config.GlobalCfgParam;
 import com.rpc.common.domain.RpcPoster;
 import com.rpc.common.domain.ServiceHost;
 import com.rpc.common.registry.Registry;
+import com.rpc.common.registry.support.local.LocalRegistry;
 import com.rpc.common.util.RegistryUtil;
 import com.rpc.common.uuid.IncrementId;
 import org.springframework.stereotype.Component;
@@ -39,12 +41,18 @@ public class RpcClientProxy implements IProxy {
                 poster.setGroup(group);
 
                 Registry registry = RegistryUtil.resolveRegistryType(null);
-                List<ServiceHost> services = registry.discoverServices(poster.getClassName());
-                if (services.isEmpty()) {
-                    throw new IllegalStateException("not exist service: " + poster.getClassName());
+                ServiceHost remoteHost;
+                if (registry instanceof LocalRegistry){
+                    remoteHost = new ServiceHost(GlobalCfgParam.LocalRegistry.getStrVal(), GlobalCfgParam.NettyPort.getStrVal());
+                }else {
+                    List<ServiceHost> services = registry.discoverServices(poster.getClassName());
+                    if (services.isEmpty()) {
+                        throw new IllegalStateException("not exist service: " + poster.getClassName());
+                    }
+                    //随机选择一台可以提供服务的远程主机
+                    remoteHost = services.get(new Random().nextInt(services.size()));
                 }
-                //在zookeeper中随机选择一台可以提供服务的远程主机
-                ServiceHost remoteHost = services.get(new Random().nextInt(services.size()));
+
                 NettyClient nettyClient = NettyClientPool.getClient(remoteHost.getIp());
 
                 return nettyClient.request(poster, remoteHost);
@@ -53,6 +61,8 @@ public class RpcClientProxy implements IProxy {
     }
 
     private void checkInterface(Class<?> clazz) {
-        if (!clazz.isInterface()) throw new RuntimeException(clazz.getName() + " is not an interface");
+        if (!clazz.isInterface()) {
+            throw new RuntimeException(clazz.getName() + " is not an interface");
+        }
     }
 }

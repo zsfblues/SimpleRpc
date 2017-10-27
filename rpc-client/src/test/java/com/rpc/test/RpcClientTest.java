@@ -29,7 +29,7 @@ public class RpcClientTest {
 //        ITestService testService2 = proxy.newProxy(ITestService.class, "service2");
 //        testService.sub(1, 1);
 //        testService2.sub(1, 1);
-        System.out.println(echoService.sum(2,1));
+        System.out.println(echoService.sum(5,1));
         System.out.println(testService.sub(1, 1));
 //        System.out.println(echoService.hello("zsf"));
     }

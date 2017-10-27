@@ -1,10 +1,15 @@
 package com.rpc.common.registry.support.normal;
 
+import com.rpc.common.config.GlobalCfgParam;
 import com.rpc.common.domain.URL;
 import com.rpc.common.exception.SimpleRpcExMsgConstants;
 import com.rpc.common.exception.SimpleRpcException;
 import com.rpc.common.registry.Registry;
 import com.rpc.common.registry.RegistryFactory;
+import org.apache.curator.RetryPolicy;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.retry.ExponentialBackoffRetry;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -32,6 +37,17 @@ public abstract class AbstractRegistryFactory implements RegistryFactory{
 
             return registry;
         }
+    }
+
+    protected CuratorFramework connect(String str){
+        RetryPolicy retryPolicy = new ExponentialBackoffRetry(GlobalCfgParam.ConnectTimeout.getIntVal(), 3);
+        CuratorFramework client = CuratorFrameworkFactory.builder()
+                .sessionTimeoutMs(GlobalCfgParam.SessionTimeout.getIntVal())
+                .connectString(str)
+                .retryPolicy(retryPolicy)
+                .build();
+        client.start();
+        return client;
     }
 
     protected abstract Registry newRegistry(URL url);

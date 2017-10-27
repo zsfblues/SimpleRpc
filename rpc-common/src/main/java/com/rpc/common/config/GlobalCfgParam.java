@@ -15,7 +15,11 @@ public enum GlobalCfgParam {
 
     //全局配置
     ApplicationName("applicationName", SimpleRpcConstants.APPLICATION_NAME),
-    RegistryAddress("registryAddress", "zookeeper://116.196.101.52:2181"),
+    // 本地直连
+    RegistryAddress("registryAddress", "local://127.0.0.1:2181"),
+    // 远程注册中心
+//    RegistryAddress("registryAddress", "zookeeper://116.196.101.52:2181"),
+    LocalRegistry("localAddress", "127.0.0.1"),
     NettyPort("nettyPort", 8000);
 
     private String name;

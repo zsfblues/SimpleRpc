@@ -37,15 +37,4 @@ public class ZookeeperRegistryFactory extends AbstractRegistryFactory {
 
         return new ZookeeperRegistry(curator);
     }
-
-    private CuratorFramework connect(String str){
-        RetryPolicy retryPolicy = new ExponentialBackoffRetry(GlobalCfgParam.ConnectTimeout.getIntVal(), 3);
-        CuratorFramework client = CuratorFrameworkFactory.builder()
-                .sessionTimeoutMs(GlobalCfgParam.SessionTimeout.getIntVal())
-                .connectString(str)
-                .retryPolicy(retryPolicy)
-                .build();
-        client.start();
-        return client;
-    }
 }

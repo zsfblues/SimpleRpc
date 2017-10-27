@@ -5,6 +5,8 @@ import com.rpc.common.domain.URL;
 import com.rpc.common.exception.SimpleRpcExMsgConstants;
 import com.rpc.common.exception.SimpleRpcException;
 import com.rpc.common.registry.Registry;
+import com.rpc.common.registry.support.local.LocalRegistry;
+import com.rpc.common.registry.support.local.LocalRegistryFactory;
 import com.rpc.common.registry.support.zookeeper.ZookeeperRegistryFactory;
 
 /**
@@ -20,10 +22,13 @@ public class RegistryUtil {
             url = URL.toURL(registryUrl);
         }
         String protocol = url.getProtocol();
-        Registry registry = null;
+        Registry registry;
         switch (protocol){
             case SimpleRpcConstants.ZK_DEFAULT_PREFIX:
                 registry = new ZookeeperRegistryFactory().getRegistry(url);
+                break;
+            case SimpleRpcConstants.LOCAL_DEFAULT_PREFIX:
+                registry = new LocalRegistryFactory().getRegistry(url);
                 break;
             default:
                 throw new SimpleRpcException("Unsupported registry type", SimpleRpcExMsgConstants.RPC_UNKNOWN_REGISTRY_ERROR);
