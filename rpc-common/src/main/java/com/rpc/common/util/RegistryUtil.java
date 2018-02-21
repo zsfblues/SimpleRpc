@@ -5,7 +5,6 @@ import com.rpc.common.domain.URL;
 import com.rpc.common.exception.SimpleRpcExMsgConstants;
 import com.rpc.common.exception.SimpleRpcException;
 import com.rpc.common.registry.Registry;
-import com.rpc.common.registry.support.local.LocalRegistry;
 import com.rpc.common.registry.support.local.LocalRegistryFactory;
 import com.rpc.common.registry.support.zookeeper.ZookeeperRegistryFactory;
 

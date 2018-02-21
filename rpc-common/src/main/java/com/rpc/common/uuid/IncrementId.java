@@ -8,9 +8,9 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author zhoushengfan
  */
 public class IncrementId {
-    private static final AtomicLong incrementLong = new AtomicLong(1L);
+    private static final AtomicLong INCREMENT_LONG = new AtomicLong(1L);
 
     public static Long next(){
-        return incrementLong.getAndIncrement();
+        return INCREMENT_LONG.getAndIncrement();
     }
 }

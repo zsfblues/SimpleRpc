@@ -1,12 +1,8 @@
 package com.rpc.common.registry.support.local;
 
 import com.rpc.common.domain.URL;
-import com.rpc.common.exception.SimpleRpcExMsgConstants;
-import com.rpc.common.exception.SimpleRpcException;
 import com.rpc.common.registry.Registry;
-import com.rpc.common.registry.support.normal.AbstractRegistryFactory;
-import com.rpc.common.util.SimpleRpcConstants;
-import org.apache.curator.framework.CuratorFramework;
+import com.rpc.common.registry.AbstractRegistryFactory;
 
 /**
  * Created on 2017/10/10.

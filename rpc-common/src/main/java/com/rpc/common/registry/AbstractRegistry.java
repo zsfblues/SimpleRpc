@@ -1,12 +1,13 @@
-package com.rpc.common.registry.support.normal;
+package com.rpc.common.registry;
 
+import com.rpc.common.domain.ServiceHost;
 import com.rpc.common.domain.URL;
 import com.rpc.common.domain.rpcService.RpcServiceContainer;
-import com.rpc.common.registry.Registry;
 import com.rpc.common.util.ConcurrentHashSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -16,7 +17,7 @@ import java.util.Set;
  */
 public abstract class AbstractRegistry implements Registry {
 
-    private static  final Logger LOG = LoggerFactory.getLogger(AbstractRegistry.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractRegistry.class);
 
     private Set<URL> registeredServiceUrls = new ConcurrentHashSet<>();
 
@@ -38,6 +39,15 @@ public abstract class AbstractRegistry implements Registry {
         LOG.info("register url : {}", url.toString());
         registeredServiceUrls.add(url);
         doRegister(url, container);
+    }
+
+    @Override
+    public URL getUrl() {
+        return null;
+    }
+
+    public List<ServiceHost> discoverServices(String name) {
+        return null;
     }
 
     protected abstract void doRegister(URL url, RpcServiceContainer container);

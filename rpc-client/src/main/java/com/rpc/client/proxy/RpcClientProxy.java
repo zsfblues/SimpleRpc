@@ -44,7 +44,7 @@ public class RpcClientProxy implements IProxy {
                 ServiceHost remoteHost;
                 if (registry instanceof LocalRegistry){
                     remoteHost = new ServiceHost(GlobalCfgParam.LocalRegistry.getStrVal(), GlobalCfgParam.NettyPort.getStrVal());
-                }else {
+                } else {
                     List<ServiceHost> services = registry.discoverServices(poster.getClassName());
                     if (services.isEmpty()) {
                         throw new IllegalStateException("not exist service: " + poster.getClassName());

@@ -1,4 +1,4 @@
-package com.rpc.common.registry.support.normal;
+package com.rpc.common.registry;
 
 import com.rpc.common.config.GlobalCfgParam;
 import com.rpc.common.domain.URL;
@@ -18,34 +18,31 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author zhoushengfan
  */
-public abstract class AbstractRegistryFactory implements RegistryFactory{
+public abstract class AbstractRegistryFactory implements RegistryFactory {
 
     private static final ConcurrentHashMap<String, Registry> registryCenter = new ConcurrentHashMap<>();
 
-    public Registry getRegistry(URL url){
+    public Registry getRegistry(URL url) {
         String registryUrl = url.getUrl();
-        synchronized (this){
-            Registry registry = registryCenter.get(registryUrl);
-            if (registry != null) {
-                return registry;
-            }
-            registry = newRegistry(url);
-            if (registry == null){
-                throw new SimpleRpcException(String.format("create new registry for [ %s ] fails", url.toString()), SimpleRpcExMsgConstants.FRAMEWORK_INIT_ERROR);
-            }
-            registryCenter.put(registryUrl, registry);
-
+        Registry registry = registryCenter.get(registryUrl);
+        if (registry != null) {
             return registry;
+        }
+        registry = newRegistry(url);
+        if (registry == null) {
+            throw new SimpleRpcException(String.format("create new registry for [ %s ] fails", url.toString()), SimpleRpcExMsgConstants.FRAMEWORK_INIT_ERROR);
+        }
+        Registry existRegistry = registryCenter.putIfAbsent(registryUrl, registry);
+        if (existRegistry == null) {
+            return registryCenter.get(registryUrl);
+        } else {
+            return existRegistry;
         }
     }
 
-    protected CuratorFramework connect(String str){
+    protected CuratorFramework connect(String str) {
         RetryPolicy retryPolicy = new ExponentialBackoffRetry(GlobalCfgParam.ConnectTimeout.getIntVal(), 3);
-        CuratorFramework client = CuratorFrameworkFactory.builder()
-                .sessionTimeoutMs(GlobalCfgParam.SessionTimeout.getIntVal())
-                .connectString(str)
-                .retryPolicy(retryPolicy)
-                .build();
+        CuratorFramework client = CuratorFrameworkFactory.builder().sessionTimeoutMs(GlobalCfgParam.SessionTimeout.getIntVal()).connectString(str).retryPolicy(retryPolicy).build();
         client.start();
         return client;
     }
