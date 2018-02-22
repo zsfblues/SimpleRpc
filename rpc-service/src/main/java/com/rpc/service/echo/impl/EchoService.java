@@ -1,7 +1,7 @@
 package com.rpc.service.echo.impl;
 
-import com.rpc.common.annotations.RpcService;
 import com.rpc.client.service.IEchoService;
+import com.rpc.common.annotations.RpcService;
 
 
 /**

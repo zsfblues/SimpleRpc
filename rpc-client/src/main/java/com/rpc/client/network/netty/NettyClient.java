@@ -19,9 +19,6 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.InputStream;
-import java.util.Properties;
-
 /**
  * Created on 2017/5/28.
  *
@@ -38,7 +35,7 @@ public class NettyClient {
         RpcCallback callback = new RpcCallback(poster);
         RpcCallback.callbackMap.put(poster.getRequestId(), callback);
 
-        RpcCallback.taskPool.submit(() -> {
+        RpcCallback.taskPool.execute(() -> {
             try {
                 startUp(remoteHost.getIp(), Integer.parseInt(remoteHost.getPort()));
                 send(poster);
@@ -83,7 +80,7 @@ public class NettyClient {
                     protected void initChannel(SocketChannel ch) throws Exception {
 
                         ChannelPipeline cp = ch.pipeline();
-                        //加入编解码类
+                        // 加入编解码类
                         RpcProtocol protocol = new RpcProtocol();
                         cp.addLast(protocol.new RpcPosterEncoder(RpcPoster.class));
                         cp.addLast(protocol.new RpcPosterDecoder(RpcResponse.class));

@@ -41,7 +41,7 @@ public class URL {
 
     public static URL toURL(String url){
         if (StringUtils.isBlank(url)){
-            return null;
+            throw new IllegalArgumentException("unable resolved url, it's null");
         }
         String protocol = null;
         String ip = null;

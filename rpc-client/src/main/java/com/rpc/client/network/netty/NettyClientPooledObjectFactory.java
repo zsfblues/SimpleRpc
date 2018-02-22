@@ -9,7 +9,7 @@ import org.apache.commons.pool2.impl.DefaultPooledObject;
  *
  * @author zhoushengfan
  */
-public class NettyClientPoolFactory extends BasePooledObjectFactory<NettyClient> {
+public class NettyClientPooledObjectFactory extends BasePooledObjectFactory<NettyClient> {
     @Override
     public NettyClient create() throws Exception {
         return new NettyClient();

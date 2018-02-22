@@ -2,12 +2,11 @@ package com.rpc.common.service;
 
 import com.rpc.common.domain.RpcPoster;
 import com.rpc.common.domain.RpcResponse;
+import com.rpc.common.pool.RpcTaskPool;
 
-import java.text.MessageFormat;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -18,11 +17,11 @@ import java.util.concurrent.TimeoutException;
 public class RpcCallback {
 
     public static ConcurrentMap<Long, RpcCallback> callbackMap;
-    public static ExecutorService taskPool;
+    public static ThreadPoolExecutor taskPool;
 
     static {
         callbackMap = new ConcurrentHashMap<>();
-        taskPool = Executors.newFixedThreadPool(20);
+        taskPool = new RpcTaskPool("taskPoolThread").newExecutor();
     }
 
     private RpcPoster request;
@@ -38,7 +37,7 @@ public class RpcCallback {
         return response;
     }
 
-    //获取结果后立即返回结果
+    // 获取结果后立即返回结果
     public void setResponse(RpcResponse response) {
         this.response = response;
         // notify future lock
@@ -61,7 +60,7 @@ public class RpcCallback {
         }
 
         if (!isDone) {
-            throw new TimeoutException(MessageFormat.format("simple-rpc --------> request timeout at:{0}, time limit:{1}, request:{2}",
+            throw new TimeoutException(String.format("simple-rpc --------> request timeout at: %s, time limit:%s, request: %s",
                     System.currentTimeMillis(), timeoutMillis, request.toString()));
         }
         return response;
