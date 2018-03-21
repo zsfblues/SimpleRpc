@@ -1,0 +1,2 @@
+com.rpc.common.registry.support.zookeeper.ZookeeperRegistryFactory
+com.rpc.common.registry.support.local.LocalRegistryFactory
