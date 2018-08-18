@@ -61,12 +61,8 @@ public class RpcTaskPool {
     }
 
     public ThreadPoolExecutor newExecutor() {
-        ThreadPoolExecutor executor;
-        if (executorReference.compareAndSet(null, (executor = new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveSec,
-                TimeUnit.SECONDS, sPoolWorkQueue, threadFactory, rejectedExecutionHandler)))) {
-            return executor;
-        } else {
-            return executorReference.get();
-        }
+        executorReference.compareAndSet(null, new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveSec,
+                TimeUnit.SECONDS, sPoolWorkQueue, threadFactory, rejectedExecutionHandler));
+        return executorReference.get();
     }
 }
